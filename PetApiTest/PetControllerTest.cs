@@ -125,6 +125,22 @@ namespace PetApiTest
             Assert.Equal(HttpStatusCode.NotFound, responseMessage.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_can_del_pet_when_sell()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 10);
+            var pet2 = new Pet("pet2", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
+            //when
+            var delResult = await httpClient.DeleteAsync(url + "/pet1");
+            //then
+            delResult.EnsureSuccessStatusCode();
+        }
+
         private static StringContent CoverPetToContent(Pet pet)
         {
             var petString = JsonConvert.SerializeObject(pet);

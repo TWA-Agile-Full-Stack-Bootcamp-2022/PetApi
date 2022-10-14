@@ -33,6 +33,11 @@ namespace PetApi.Controllers
             return Pets.Find(pet => pet.Name.Equals(name));
         }
 
+        [HttpDelete("{name}")]
+        public void Sell(string name)
+        {
+        }
+
         [HttpDelete]
         public void Del()
         {
