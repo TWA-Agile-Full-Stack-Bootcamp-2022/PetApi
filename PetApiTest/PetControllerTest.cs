@@ -120,7 +120,7 @@ namespace PetApiTest
             await httpClient.PostAsync(url, CoverPetToContent(pet1));
             await httpClient.PostAsync(url, CoverPetToContent(pet2));
             //when
-            var responseMessage = await httpClient.GetAsync(url + "not_in_pet_name");
+            var responseMessage = await httpClient.GetAsync(url + "/not_in_pet_name");
             //then
             Assert.Equal(HttpStatusCode.NotFound, responseMessage.StatusCode);
         }
@@ -139,6 +139,22 @@ namespace PetApiTest
             var delResult = await httpClient.DeleteAsync(url + "/pet1");
             //then
             delResult.EnsureSuccessStatusCode();
+        }
+
+        [Fact]
+        public async Task Should_remove_pet_when_del()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 10);
+            var pet2 = new Pet("pet2", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
+            await httpClient.DeleteAsync(url + "/pet1");
+            //when
+            var searchByName = await httpClient.GetAsync(url + "/pet1");
+            Assert.Equal(HttpStatusCode.NotFound, searchByName.StatusCode);
         }
 
         private static StringContent CoverPetToContent(Pet pet)

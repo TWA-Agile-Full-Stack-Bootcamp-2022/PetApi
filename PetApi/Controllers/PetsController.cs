@@ -28,14 +28,22 @@ namespace PetApi.Controllers
         }
 
         [HttpGet("{name}")]
-        public Pet GetByName(string name)
+        public ActionResult<Pet> GetByName(string name)
         {
-            return Pets.Find(pet => pet.Name.Equals(name));
+            var pet = Pets.Find(pet => pet.Name.Equals(name));
+            if (pet == null)
+            {
+                return NotFound();
+            }
+
+            return pet;
         }
 
         [HttpDelete("{name}")]
         public void Sell(string name)
         {
+            var soldPet = Pets.First(pet => pet.Name.Equals(name));
+            Pets.Remove(soldPet);
         }
 
         [HttpDelete]
