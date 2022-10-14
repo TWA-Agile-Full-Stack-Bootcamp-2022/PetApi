@@ -97,10 +97,9 @@ namespace PetApiTest
             await DelAllPets(httpClient);
             var pet1 = new Pet("pet1", "Dog", "red", 10);
             var pet2 = new Pet("pet2", "Cat", "white", 10);
-            var postAsync1 = httpClient.PostAsync(url, CoverPetToContent(pet1));
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
 
-            var postAsync2 = httpClient.PostAsync(url, CoverPetToContent(pet2));
-            Task.WaitAll(postAsync1, postAsync2);
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
             //when
             var httpResponseMessage = await httpClient.GetAsync(url + "/pet1");
             //then
@@ -108,6 +107,22 @@ namespace PetApiTest
             var resultString = await httpResponseMessage.Content.ReadAsStringAsync();
             var pet = JsonConvert.DeserializeObject<Pet>(resultString);
             Assert.Equal(pet1, pet);
+        }
+
+        [Fact]
+        public async Task Should_return_404_when_find_by_name_given_pet_not_in_store()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 10);
+            var pet2 = new Pet("pet2", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
+            //when
+            var responseMessage = await httpClient.GetAsync(url + "not_in_pet_name");
+            //then
+            Assert.Equal(HttpStatusCode.NotFound, responseMessage.StatusCode);
         }
 
         private static StringContent CoverPetToContent(Pet pet)

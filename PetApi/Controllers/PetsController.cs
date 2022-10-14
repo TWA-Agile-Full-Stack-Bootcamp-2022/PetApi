@@ -28,7 +28,6 @@ namespace PetApi.Controllers
         }
 
         [HttpGet("{name}")]
-
         public Pet GetByName(string name)
         {
             return Pets.Find(pet => pet.Name.Equals(name));
