@@ -37,7 +37,8 @@ namespace PetApiTest
 
     public class PetControllerTest : TestBase
     {
-        private string url = "/pet";
+        private string url = "/Pet";
+
         public PetControllerTest(CustomWebApplicationFactory<Startup> factory) : base(factory)
         {
         }
@@ -47,13 +48,30 @@ namespace PetApiTest
         {
             //given
             var httpClient = GetClient();
-            var pet = new Pet("petName", PetType.Dog, Color.Red, 20);
+            var pet = new Pet("petName", "Dog", "red", 20);
             var petString = JsonConvert.SerializeObject(pet);
             var content = new StringContent(petString, Encoding.UTF8, MediaTypeNames.Application.Json);
             //when
             var registerResponse = await httpClient.PostAsync(url, content);
             //then
             Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_return_400_when_add_pet_given_pet_name_duplicated()
+        {
+            //given
+            var httpClient = GetClient();
+            var pet = new Pet("petName", "Dog", "red", 20);
+            var petString = JsonConvert.SerializeObject(pet);
+            var content = new StringContent(petString, Encoding.UTF8, MediaTypeNames.Application.Json);
+            var fistCall = httpClient.PostAsync(url, content);
+            //when
+            while (fistCall.IsCompleted)
+            {
+                var httpResponseMessage = await httpClient.PostAsync(url, content);
+                Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+            }
         }
     }
 }

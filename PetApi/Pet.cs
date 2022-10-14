@@ -9,7 +9,7 @@ namespace PetApi
         {
         }
 
-        public Pet(string name, PetType type, Color color, double price)
+        public Pet(string name, string type, string color, double price)
         {
             this.Name = name;
             this.Type = type;
@@ -17,9 +17,9 @@ namespace PetApi
             this.Price = price;
         }
         
-        private string Name { get; set; }
-        private PetType Type { get; set; }
-        private Color Color { get; set; }
-        private double Price { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+        public string Color { get; set; }
+        public double Price { get; set; }
     }
 }
