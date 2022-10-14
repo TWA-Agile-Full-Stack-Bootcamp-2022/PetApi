@@ -51,6 +51,12 @@ namespace PetApi.Controllers
             return Pets.Where(pet => pet.Price >= min && pet.Price <= max).ToList();
         }
 
+        [HttpGet("colors/{color}")]
+        public List<Pet> FindByColor(string color)
+        {
+            return Pets.Where(pet => pet.Color.Equals(color)).ToList();
+        }
+
         [HttpPut("{name}")]
         public ActionResult<Pet> UpdatePrice(string name, Pet pet)
         {
