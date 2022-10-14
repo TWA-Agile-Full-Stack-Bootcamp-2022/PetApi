@@ -175,6 +175,31 @@ namespace PetApiTest
             Assert.Equal(30, updatedPet.Price);
         }
 
+        [Fact]
+        public async Task Should_return_pets_by_type()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            var pet2 = new Pet("pet2", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
+            var pet3 = new Pet("pet3", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet3));
+            var pet4 = new Pet("pet4", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet4));
+            //when
+            var httpResponseMessage = await httpClient.GetAsync(url + "/types/Cat");
+            httpResponseMessage.EnsureSuccessStatusCode();
+            var content = await httpResponseMessage.Content.ReadAsStringAsync();
+            var petsByType = JsonConvert.DeserializeObject<List<Pet>>(content);
+            Assert.Equal(3, petsByType.Count);
+            Assert.Equal(pet2, petsByType[0]);
+            Assert.Equal(pet3, petsByType[1]);
+            Assert.Equal(pet4, petsByType[2]);
+        }
+
         private static StringContent CoverPetToContent(Pet pet)
         {
             var petString = JsonConvert.SerializeObject(pet);

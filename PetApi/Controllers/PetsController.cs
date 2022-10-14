@@ -39,6 +39,12 @@ namespace PetApi.Controllers
             return pet;
         }
 
+        [HttpGet("types/{type}")]
+        public List<Pet> FindByType(string type)
+        {
+            return Pets.Where(pet => pet.Type.Equals(type)).ToList();
+        }
+
         [HttpPut("{name}")]
         public ActionResult<Pet> UpdatePrice(string name, Pet pet)
         {
