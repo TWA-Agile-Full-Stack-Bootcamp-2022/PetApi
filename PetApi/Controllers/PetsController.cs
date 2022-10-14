@@ -39,6 +39,19 @@ namespace PetApi.Controllers
             return pet;
         }
 
+        [HttpPut("{name}")]
+        public ActionResult<Pet> UpdatePrice(string name, Pet pet)
+        {
+            var petSearch = Pets.Find(pet => pet.Name.Equals(name));
+            if (petSearch == null)
+            {
+                return NotFound();
+            }
+
+            petSearch.Price = pet.Price;
+            return petSearch;
+        }
+
         [HttpDelete("{name}")]
         public void Sell(string name)
         {

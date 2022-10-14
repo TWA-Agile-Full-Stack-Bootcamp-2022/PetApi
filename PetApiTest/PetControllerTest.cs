@@ -157,6 +157,24 @@ namespace PetApiTest
             Assert.Equal(HttpStatusCode.NotFound, searchByName.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_can_update_price_when_change_price()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            pet1.Price = 30;
+            //when
+            await httpClient.PutAsync(url + "/pet1", CoverPetToContent(pet1));
+            //then
+            var updatedPetResponse = await httpClient.GetAsync(url + "/pet1");
+            var updatedPetString = await updatedPetResponse.Content.ReadAsStringAsync();
+            var updatedPet = JsonConvert.DeserializeObject<Pet>(updatedPetString);
+            Assert.Equal(30, updatedPet.Price);
+        }
+
         private static StringContent CoverPetToContent(Pet pet)
         {
             var petString = JsonConvert.SerializeObject(pet);
