@@ -1,20 +1,14 @@
 using System.Collections.Generic;
-using System.Drawing;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Xunit;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 using PetApi;
-using PetApi;
+using Xunit;
 
 namespace PetApiTest
 {
@@ -44,15 +38,17 @@ namespace PetApiTest
 
     public class PetControllerTest
     {
-        private string url = "/Pets";
+        private static string url = "/Pets";
 
         [Fact]
         public async Task Should_return_success_when_call_put_given_pet()
         {
             //given
+
             var httpClient = GetClient();
             var pet = new Pet("petName", "Dog", "red", 20);
             var content = CoverPetToContent(pet);
+            await DelAllPets(httpClient);
             //when
             var registerResponse = await httpClient.PostAsync(url, content);
             //then
@@ -64,15 +60,13 @@ namespace PetApiTest
         {
             //given
             var httpClient = GetClient();
+            await DelAllPets(httpClient);
             var pet = new Pet("petName", "Dog", "red", 20);
             var content = CoverPetToContent(pet);
-            var fistCall = httpClient.PostAsync(url, content);
+            await httpClient.PostAsync(url, content);
             //when
-            while (fistCall.IsCompleted)
-            {
-                var httpResponseMessage = await httpClient.PostAsync(url, content);
-                Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
-            }
+            var httpResponseMessage = await httpClient.PostAsync(url, content);
+            Assert.Equal(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
         }
 
         [Fact]
@@ -80,22 +74,40 @@ namespace PetApiTest
         {
             //given
             var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 10);
+            var pet2 = new Pet("pet2", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
+            //when
+            var httpResponseMessage = await httpClient.GetAsync(url);
+            //then
+            httpResponseMessage.EnsureSuccessStatusCode();
+            var resultString = await httpResponseMessage.Content.ReadAsStringAsync();
+            var pets = JsonConvert.DeserializeObject<List<Pet>>(resultString);
+            Assert.Equal(pet1, pets[0]);
+            Assert.Equal(pet2, pets[1]);
+        }
+
+        [Fact]
+        public async Task Should_return_pets_by_name()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
             var pet1 = new Pet("pet1", "Dog", "red", 10);
             var pet2 = new Pet("pet2", "Cat", "white", 10);
             var postAsync1 = httpClient.PostAsync(url, CoverPetToContent(pet1));
 
             var postAsync2 = httpClient.PostAsync(url, CoverPetToContent(pet2));
+            Task.WaitAll(postAsync1, postAsync2);
             //when
-            while (postAsync1.IsCompleted && postAsync2.IsCompleted)
-            {
-                var httpResponseMessage = await httpClient.GetAsync(url);
-                //then
-                httpResponseMessage.EnsureSuccessStatusCode();
-                var resultString = await httpResponseMessage.Content.ReadAsStringAsync();
-                var pets = JsonConvert.DeserializeObject<List<Pet>>(resultString);
-                Assert.Equal(pet1, pets[0]);
-                Assert.Equal(pet2, pets[1]);
-            }
+            var httpResponseMessage = await httpClient.GetAsync(url + "/pet1");
+            //then
+            httpResponseMessage.EnsureSuccessStatusCode();
+            var resultString = await httpResponseMessage.Content.ReadAsStringAsync();
+            var pet = JsonConvert.DeserializeObject<Pet>(resultString);
+            Assert.Equal(pet1, pet);
         }
 
         private static StringContent CoverPetToContent(Pet pet)
@@ -111,6 +123,11 @@ namespace PetApiTest
                 .UseStartup<Startup>());
             HttpClient client = server.CreateClient();
             return client;
+        }
+
+        private static async Task DelAllPets(HttpClient client)
+        {
+            await client.DeleteAsync(url);
         }
     }
 }

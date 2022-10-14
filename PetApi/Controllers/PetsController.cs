@@ -8,7 +8,7 @@ namespace PetApi.Controllers
     [Route("[controller]")]
     public class PetsController : ControllerBase
     {
-        private List<Pet> Pets { get; set; } = new List<Pet>();
+        private static List<Pet> Pets { get; set; } = new List<Pet>();
         [HttpPost]
         public ActionResult<Pet> AddPet(Pet pet)
         {
@@ -25,6 +25,19 @@ namespace PetApi.Controllers
         public List<Pet> List()
         {
             return Pets;
+        }
+
+        [HttpGet("{name}")]
+
+        public Pet GetByName(string name)
+        {
+            return Pets.Find(pet => pet.Name.Equals(name));
+        }
+
+        [HttpDelete]
+        public void Del()
+        {
+            Pets = new List<Pet>();
         }
     }
 }
