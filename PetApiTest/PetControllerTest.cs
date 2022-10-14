@@ -200,6 +200,32 @@ namespace PetApiTest
             Assert.Equal(pet4, petsByType[2]);
         }
 
+        [Fact]
+        public async Task Should_find_pets_by_price_range()
+        {
+            //given
+            var httpClient = GetClient();
+            await DelAllPets(httpClient);
+            var pet1 = new Pet("pet1", "Dog", "red", 100);
+            await httpClient.PostAsync(url, CoverPetToContent(pet1));
+            var pet2 = new Pet("pet2", "Cat", "white", 10);
+            await httpClient.PostAsync(url, CoverPetToContent(pet2));
+            var pet3 = new Pet("pet3", "Cat", "white", 200);
+            await httpClient.PostAsync(url, CoverPetToContent(pet3));
+            var pet4 = new Pet("pet4", "Cat", "white", 300);
+            await httpClient.PostAsync(url, CoverPetToContent(pet4));
+            //when
+            var responseMessage = await httpClient.GetAsync(url + "/priceRange?min=100&max=300");
+            //then
+            responseMessage.EnsureSuccessStatusCode();
+            var responseContent = await responseMessage.Content.ReadAsStringAsync();
+            var pets = JsonConvert.DeserializeObject<List<Pet>>(responseContent);
+            Assert.Equal(3, pets.Count);
+            Assert.Equal(pet1, pets[0]);
+            Assert.Equal(pet3, pets[1]);
+            Assert.Equal(pet4, pets[2]);
+        }
+
         private static StringContent CoverPetToContent(Pet pet)
         {
             var petString = JsonConvert.SerializeObject(pet);
