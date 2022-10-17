@@ -19,6 +19,7 @@ namespace PetApiTest
         {
             // Given
             HttpClient httpClient = GenerateHttpClient();
+            await ResetPetDatabase(httpClient);
             Pet pet = new Pet(name: "Baymax", type: "dog", color: "white", price: 1000);
             StringContent stringContent =
                 new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, "application/json");
@@ -35,6 +36,7 @@ namespace PetApiTest
         {
             // given
             HttpClient httpClient = GenerateHttpClient();
+            await ResetPetDatabase(httpClient);
 
             Pet baymaxDog = new Pet(name: "Baymax", type: "dog", color: "white", price: 1000);
             await httpClient.PostAsync("api/addPet",
@@ -58,6 +60,7 @@ namespace PetApiTest
         {
             // given
             var client = GenerateHttpClient();
+            await ResetPetDatabase(client);
 
             Pet baymaxDog = new Pet(name: "Baymax", type: "dog", color: "white", price: 1000);
             await client.PostAsync("api/addPet",
@@ -82,6 +85,7 @@ namespace PetApiTest
         {
             // given
             var client = GenerateHttpClient();
+            await ResetPetDatabase(client);
 
             Pet baymaxDog = new Pet(name: "Baymax", type: "dog", color: "white", price: 1000);
             await client.PostAsync("api/addPet",
@@ -96,6 +100,37 @@ namespace PetApiTest
             var responseBody = await getAllResponse.Content.ReadAsStringAsync();
             var actualPets = JsonConvert.DeserializeObject<List<Pet>>(responseBody);
             Assert.Equal(0, actualPets.Count);
+        }
+
+        [Fact]
+        public async Task Should_Modify_Price_When_Modify_Pet_Price()
+        {
+            // given
+            var client = GenerateHttpClient();
+            await ResetPetDatabase(client);
+
+            Pet baymaxDog = new Pet(name: "Baymax", type: "dog", color: "white", price: 1000);
+            await client.PostAsync("api/addPet",
+                new StringContent(JsonConvert.SerializeObject(baymaxDog), Encoding.UTF8, "application/json"));
+
+            Pet updatedBaymaxDog = new Pet(name: "Baymax", type: "dog", color: "white", price: 500);
+            StringContent stringContent =
+                new StringContent(JsonConvert.SerializeObject(updatedBaymaxDog), Encoding.UTF8, "application/json");
+
+            // when
+            await client.PutAsync("api/modifyPetPrice", stringContent);
+
+            // then
+            var findPetByNameResponse = await client.GetAsync("api/findPetByName?name=Baymax");
+            findPetByNameResponse.EnsureSuccessStatusCode();
+            var responseBody = await findPetByNameResponse.Content.ReadAsStringAsync();
+            var actualPet = JsonConvert.DeserializeObject<Pet>(responseBody);
+            Assert.Equal(500, actualPet.Price);
+        }
+
+        private static async Task ResetPetDatabase(HttpClient client)
+        {
+            await client.GetAsync("api/resetPets");
         }
 
         private static HttpClient GenerateHttpClient()
