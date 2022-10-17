@@ -35,12 +35,25 @@ namespace PetApi
         {
             pets.Clear();
         }
-        
+
         [HttpDelete("pets/{name}")]
         public void DeletePetsByName(string name)
         {
             var removedCount = pets.RemoveAll(pets => pets.Name.Equals(name));
             Console.WriteLine("delete pets by name {0}, deletedCount={1}", name, removedCount);
+        }
+
+        [HttpPut("pets/{name}")]
+        public ActionResult<Pet> ModifyPetsBy(string name, Pet pet)
+        {
+            var petToModify = pets.FirstOrDefault(pet => pet.Name.Equals(name));
+            if (petToModify == null)
+            {
+                return NotFound();
+            }
+
+            petToModify = pet;
+            return Ok(petToModify);
         }
     }
 }
