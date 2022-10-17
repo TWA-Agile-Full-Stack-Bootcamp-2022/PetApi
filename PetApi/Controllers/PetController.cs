@@ -7,13 +7,19 @@ namespace PetApi
     [Route("api")]
     public class PetController : Controller
     {
-        private List<Pet> pets = new List<Pet>();
+        private static List<Pet> pets = new List<Pet>();
 
         [HttpPost("pets")]
         public Pet AddPet(Pet pet)
         {
             pets.Add(pet);
             return pet;
+        }
+
+        [HttpGet("pets")]
+        public List<Pet> GetAllPets()
+        {
+            return pets;
         }
     }
 }
