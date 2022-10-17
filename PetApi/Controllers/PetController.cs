@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,13 @@ namespace PetApi
         public void DeleteAllPets()
         {
             pets.Clear();
+        }
+        
+        [HttpDelete("pets/{name}")]
+        public void DeletePetsByName(string name)
+        {
+            var removedCount = pets.RemoveAll(pets => pets.Name.Equals(name));
+            Console.WriteLine("delete pets by name {0}, deletedCount={1}", name, removedCount);
         }
     }
 }
