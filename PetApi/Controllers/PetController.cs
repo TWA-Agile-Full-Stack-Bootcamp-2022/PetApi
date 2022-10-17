@@ -19,7 +19,8 @@ namespace PetApi
         }
 
         [HttpGet]
-        public List<Pet> GetAllPets([FromQuery] string? type, [FromQuery] int? priceFrom, [FromQuery] int? priceTo)
+        public List<Pet> GetAllPets([FromQuery] string? type, [FromQuery] int? priceFrom, [FromQuery] int? priceTo,
+            [FromQuery] string? color)
         {
             if (type != null)
             {
@@ -29,6 +30,11 @@ namespace PetApi
             if (priceFrom != null && priceTo != null)
             {
                 return pets.FindAll(pet => pet.Price >= priceFrom && pet.Price <= priceTo);
+            }
+
+            if (color != null)
+            {
+                return pets.FindAll(pet => pet.Color.Equals(color));
             }
 
             return pets;
