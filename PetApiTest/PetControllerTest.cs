@@ -95,6 +95,25 @@ namespace PetApiTest
             Assert.Equal(petModified, petAfterModified);
         }
 
+        [Fact]
+        public async void Should_find_pets_by_type_successfully()
+        {
+            var client = await ResetContextAndGetHttpClient();
+
+            var petBaymax = new Pet(name: "Baymax", type: "dog", color: "white", price: 1000);
+            await client.PostAsync("api/pets", SerializeToJsonString(petBaymax));
+            var petJinMao = new Pet(name: "JinMao", type: "dog", color: "white", price: 5000);
+            await client.PostAsync("api/pets", SerializeToJsonString(petJinMao));
+            var petBuou = new Pet(name: "Buou", type: "cat", color: "gray", price: 3000);
+            await client.PostAsync("api/pets", SerializeToJsonString(petBuou));
+
+            var response = await client.GetAsync("/api/pets?type=dog");
+
+            response.EnsureSuccessStatusCode();
+            var fountPets = await DeserializeToType<List<Pet>>(response);
+            Assert.Equal(new List<Pet>() { petBaymax, petJinMao }, fountPets);
+        }
+
         private static async Task<HttpClient> ResetContextAndGetHttpClient()
         {
             var server = new TestServer(new WebHostBuilder().UseStartup<Startup>());

@@ -6,44 +6,49 @@ using Microsoft.AspNetCore.Mvc;
 namespace PetApi
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/pets")]
     public class PetController : Controller
     {
         private static List<Pet> pets = new List<Pet>();
 
-        [HttpPost("pets")]
+        [HttpPost]
         public Pet AddPet(Pet pet)
         {
             pets.Add(pet);
             return pet;
         }
 
-        [HttpGet("pets")]
-        public List<Pet> GetAllPets()
+        [HttpGet]
+        public List<Pet> GetAllPets([FromQuery] string? type)
         {
+            if (type != null)
+            {
+                return pets.FindAll(pet => pet.Type.Equals(type));
+            }
+
             return pets;
         }
 
-        [HttpGet("pets/{name}")]
-        public Pet GetAllPets(string name)
+        [HttpGet("{name}")]
+        public Pet GetPetByName(string name)
         {
             return pets.FirstOrDefault(pet => pet.Name.Equals(name));
         }
 
-        [HttpDelete("pets")]
+        [HttpDelete]
         public void DeleteAllPets()
         {
             pets.Clear();
         }
 
-        [HttpDelete("pets/{name}")]
+        [HttpDelete("{name}")]
         public void DeletePetsByName(string name)
         {
             var removedCount = pets.RemoveAll(pets => pets.Name.Equals(name));
             Console.WriteLine("delete pets by name {0}, deletedCount={1}", name, removedCount);
         }
 
-        [HttpPut("pets/{name}")]
+        [HttpPut("{name}")]
         public ActionResult<Pet> ModifyPetsBy(string name, Pet pet)
         {
             var petToModify = pets.FirstOrDefault(pet => pet.Name.Equals(name));
