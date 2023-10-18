@@ -6,15 +6,12 @@ using Xunit;
 
 namespace PetApiTest
 {
-    public class PetControllerTest : IClassFixture<CustomWebApplicationFactory<Program>>
+    public class PetControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
-        private readonly HttpClient client;
-        private readonly CustomWebApplicationFactory<Program> factory;
-
-        public PetControllerTest(CustomWebApplicationFactory<Program> factory)
+        private HttpClient client;
+        public PetControllerTest(WebApplicationFactory<Program> factory)
         {
-            this.factory = factory;
-            client = factory.CreateClient(new WebApplicationFactoryClientOptions { });
+            client = factory.CreateClient();
         }
 
         [Fact]
