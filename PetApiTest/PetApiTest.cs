@@ -12,9 +12,11 @@ using Xunit;
 using Newtonsoft.Json;
 using System.Net.Mime;
 using PetApi.Controllers;
+using Microsoft.AspNetCore.Http;
 
 namespace PetApiTest
 {
+    [Collection("Sequential")]
     public class PetApiTest
     {
         [Fact]
@@ -36,10 +38,14 @@ namespace PetApiTest
             HttpClient client = server.CreateClient();
             var petController = new PetController();
             var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
-            petController.SetPets(new List<Pet> { pet, pet });
+            petController.Reset();
+            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            await client.PostAsync("/Pet", httpContent);
+            await client.PostAsync("/Pet", httpContent);
 
             var response = await client.GetAsync("/Pet");
             var body = await response.Content.ReadAsStringAsync();
+
             var pets = JsonConvert.DeserializeObject<List<Pet>>(body);
 
             Assert.Equal(2, pets.Count);
@@ -55,12 +61,29 @@ namespace PetApiTest
             TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
             HttpClient client = server.CreateClient();
             var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
-            petController.SetPets(new List<Pet> { pet });
+            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            await client.PostAsync("/Pet", httpContent);
 
             var response = await client.GetAsync("/Pet/Milu");
             var body = await response.Content.ReadAsStringAsync();
             var findPet = JsonConvert.DeserializeObject<Pet>(body);
             Assert.Equal(pet, findPet);
+        }
+
+        [Fact]
+        public async void Should_remove_pet_when_give_name()
+        {
+            var petController = new PetController();
+            petController.Reset();
+            TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
+            HttpClient client = server.CreateClient();
+            var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
+            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            await client.PostAsync("/Pet", httpContent);
+
+            await client.DeleteAsync("/Pet/Milu");
+
+            Assert.Empty(petController.Get());
         }
     }
 }
