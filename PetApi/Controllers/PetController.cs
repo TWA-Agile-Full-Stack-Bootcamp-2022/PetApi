@@ -23,6 +23,13 @@ namespace PetApi.Controllers
             return pets;
         }
 
+        [HttpGet("{name}")]
+        public Pet Find(string name)
+        {
+            return pets.Find(pet => pet.Name == name);
+        }
+
+        [NonAction]
         public void Reset()
         {
             pets.Clear();

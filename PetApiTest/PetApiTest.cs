@@ -34,12 +34,11 @@ namespace PetApiTest
         {
             TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
             HttpClient client = server.CreateClient();
-
             var petController = new PetController();
-            petController.Reset();
 
             var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
             var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            petController.Reset();
             await client.PostAsync("/Pet", httpContent);
             await client.PostAsync("/Pet", httpContent);
 
@@ -50,6 +49,23 @@ namespace PetApiTest
             Assert.Equal(2, pets.Count);
             Assert.Equal(pet, pets[0]);
             Assert.Equal(pet, pets[1]);
+        }
+
+        [Fact]
+        public async void Should_find_pet_when_give_name()
+        {
+            var petController = new PetController();
+            petController.Reset();
+            TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
+            HttpClient client = server.CreateClient();
+            var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
+            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            await client.PostAsync("/Pet", httpContent);
+
+            var response = await client.GetAsync("/Pet/Milu");
+            var body = await response.Content.ReadAsStringAsync();
+            var findPet = JsonConvert.DeserializeObject<Pet>(body);
+            Assert.Equal(pet, findPet);
         }
     }
 }
