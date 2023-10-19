@@ -34,5 +34,11 @@ namespace PetApi.Controllers
         {
             pets.Clear();
         }
+
+        [NonAction]
+        public void SetPets(List<Pet> pets)
+        {
+            PetController.pets = pets;
+        }
     }
 }

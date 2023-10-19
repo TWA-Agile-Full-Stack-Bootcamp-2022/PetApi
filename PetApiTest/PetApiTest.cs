@@ -35,12 +35,8 @@ namespace PetApiTest
             TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
             HttpClient client = server.CreateClient();
             var petController = new PetController();
-
             var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
-            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
-            petController.Reset();
-            await client.PostAsync("/Pet", httpContent);
-            await client.PostAsync("/Pet", httpContent);
+            petController.SetPets(new List<Pet> { pet, pet });
 
             var response = await client.GetAsync("/Pet");
             var body = await response.Content.ReadAsStringAsync();
@@ -59,8 +55,7 @@ namespace PetApiTest
             TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
             HttpClient client = server.CreateClient();
             var pet = new Pet(name: "Milu", type: "dog", color: "red", price: 100);
-            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
-            await client.PostAsync("/Pet", httpContent);
+            petController.SetPets(new List<Pet> { pet });
 
             var response = await client.GetAsync("/Pet/Milu");
             var body = await response.Content.ReadAsStringAsync();
