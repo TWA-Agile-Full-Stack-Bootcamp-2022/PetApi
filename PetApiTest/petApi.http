@@ -1,0 +1,16 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@hostname=localhost
+@port=5001
+
+            
+### Create
+POST https://{{hostname}}:{{port}}/api/pets
+Content-Type: application/json; charset=utf-8
+
+{
+  "name": "buddy",
+  "type": 0,
+  "color": "Gold",
+  "price": 300
+}
