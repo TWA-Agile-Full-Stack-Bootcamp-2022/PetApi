@@ -27,13 +27,8 @@ namespace PetApiTest
         public async Task Should_create_the_pet_when_post_to_pet_route_given_name_type_color_and_price()
         {
             // Given
-            const string givenName = "Buddy";
-            const string givenColor = "Gold";
-            const int givenPrice = 300;
-            const PetType givenType = PetType.Dog;
-
-            Pet pet = new Pet(givenName, givenType, givenColor, givenPrice);
-            string petJsonString = JsonConvert.SerializeObject(pet);
+            Pet givenPet = new Pet("Buddy", PetType.Dog, "Gold", 300);
+            string petJsonString = JsonConvert.SerializeObject(givenPet);
             var requestContent = new StringContent(petJsonString, Encoding.UTF8, MediaTypeNames.Application.Json);
 
             // When
@@ -43,10 +38,7 @@ namespace PetApiTest
 
             // Then
             response.EnsureSuccessStatusCode();
-            Assert.Equal(givenName, savedPet.Name);
-            Assert.Equal(givenType, savedPet.Type);
-            Assert.Equal(givenColor, savedPet.Color);
-            Assert.Equal(givenPrice, savedPet.Price);
+            Assert.Equal(givenPet, savedPet);
         }
     }
 }
