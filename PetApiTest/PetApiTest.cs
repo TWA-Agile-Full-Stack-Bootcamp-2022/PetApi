@@ -85,5 +85,22 @@ namespace PetApiTest
 
             Assert.Empty(petController.Get());
         }
+
+        [Fact]
+        public async void Should_update_pet_price_by_pet_name_when_give_name()
+        {
+            var petController = new PetController();
+            petController.Reset();
+            TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
+            HttpClient client = server.CreateClient();
+            var pet = new Pet(name: "Ali", type: "dog", color: "red", price: 100);
+            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            await client.PostAsync("/Pet", httpContent);
+
+            var response = await client.PutAsync("/Pet/Ali?price=200", null);
+            var body = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(200, JsonConvert.DeserializeObject<Pet>(body).Price);
+        }
     }
 }

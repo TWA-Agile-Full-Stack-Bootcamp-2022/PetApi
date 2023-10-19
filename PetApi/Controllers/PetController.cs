@@ -35,6 +35,14 @@ namespace PetApi.Controllers
             pets.Remove(pets.Find(pet => pet.Name == name));
         }
 
+        [HttpPut("{name}")]
+        public Pet UpdatePrice(string name, int price)
+        {
+            Pet petToUpdate = pets.Find(pet => pet.Name == name);
+            petToUpdate.Price = price;
+            return petToUpdate;
+        }
+
         [NonAction]
         public void Reset()
         {
