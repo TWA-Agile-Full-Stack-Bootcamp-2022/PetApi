@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 using PetApi;
-using PetApi.Controllers;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Mime;
@@ -11,14 +12,8 @@ using Xunit;
 
 namespace PetApiTest
 {
-    public class PetControllerTest : IClassFixture<WebApplicationFactory<Program>>
+    public class PetControllerTest
     {
-        private HttpClient client;
-        public PetControllerTest(WebApplicationFactory<Program> factory)
-        {
-            client = factory.CreateClient();
-        }
-
         // Need clarify requirement
         // 1. return object ?
         // 2. return code ?
@@ -27,14 +22,13 @@ namespace PetApiTest
         [Fact]
         public async Task Should_create_the_pet_when_post_to_pet_route_given_name_type_color_and_price()
         {
+            HttpClient client = CreateContextAndGetHttpClient();
+
             // Given
-            PetController.Pets.Clear();
             Pet givenPet = new Pet("Buddy", PetType.Dog, "Gold", 300);
-            string petJsonString = JsonConvert.SerializeObject(givenPet);
-            var requestContent = new StringContent(petJsonString, Encoding.UTF8, MediaTypeNames.Application.Json);
 
             // When
-            var response = await client.PostAsync("api/pets", requestContent);
+            var response = await client.PostAsync("api/pets", SerializeContent(givenPet));
             var responseBody = await response.Content.ReadAsStringAsync();
             var savedPet = JsonConvert.DeserializeObject<Pet>(responseBody);
 
@@ -46,12 +40,13 @@ namespace PetApiTest
         [Fact]
         public async Task Should_return_all_pets_when_get_all_given_some_pets_already_existed()
         {
+            HttpClient client = CreateContextAndGetHttpClient();
+
             // Given
-            PetController.Pets.Clear();
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
             Pet givenPetCat = new Pet("Luna", PetType.Cat, "White", 200);
-            PetController.Pets.Add(givenPetDog);
-            PetController.Pets.Add(givenPetCat);
+            await client.PostAsync("api/pets", SerializeContent(givenPetDog));
+            await client.PostAsync("api/pets", SerializeContent(givenPetCat));
 
             // When
             var response = await client.GetAsync("api/pets");
@@ -67,10 +62,12 @@ namespace PetApiTest
         [Fact]
         public async Task Should_return_the_pet_when_find_by_name_given_a_existed_pet_and_its_name()
         {
+            HttpClient client = CreateContextAndGetHttpClient();
+
             // Given
-            PetController.Pets.Clear();
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
-            PetController.Pets.Add(givenPetDog);
+            await client.PostAsync("api/pets", SerializeContent(givenPetDog));
+
             // When
             var response = await client.GetAsync("api/pets/Buddy");
 
@@ -84,12 +81,11 @@ namespace PetApiTest
         [Fact]
         public async Task Should_NOT_return_the_pet_when_find_by_name_given_a_not_existed_pet_name()
         {
+            HttpClient client = CreateContextAndGetHttpClient();
+
             // Given
-            PetController.Pets.Clear();
-            Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
-            PetController.Pets.Add(givenPetDog);
             // When
-            const string urlWithNotExistedPetName = "api/pets/Luna";
+            const string urlWithNotExistedPetName = "api/pets/Daisy";
             var response = await client.GetAsync(urlWithNotExistedPetName);
 
             // Then
@@ -97,6 +93,41 @@ namespace PetApiTest
             var responseBody = await response.Content.ReadAsStringAsync();
             var petFound = JsonConvert.DeserializeObject<Pet>(responseBody);
             Assert.Null(petFound);
+        }
+
+        [Fact]
+        public async Task Should_can_delete_pet_when_pet_was_sold_by_given_name()
+        {
+            HttpClient client = CreateContextAndGetHttpClient();
+
+            // Given
+            Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
+            await client.PostAsync("api/pets", SerializeContent(givenPetDog));
+
+            // When
+            const string urlWithPetName = "api/pets/Buddy";
+            await client.DeleteAsync(urlWithPetName);
+            var response = await client.GetAsync("api/pets/Buddy");
+
+            // Then
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var petFound = JsonConvert.DeserializeObject<Pet>(responseBody);
+            Assert.Null(petFound);
+        }
+
+        private static StringContent SerializeContent(Pet givenPet)
+        {
+            string petJsonString = JsonConvert.SerializeObject(givenPet);
+            var requestContent = new StringContent(petJsonString, Encoding.UTF8, MediaTypeNames.Application.Json);
+            return requestContent;
+        }
+
+        private static HttpClient CreateContextAndGetHttpClient()
+        {
+            TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
+            var client = server.CreateClient();
+            return client;
         }
     }
 }
