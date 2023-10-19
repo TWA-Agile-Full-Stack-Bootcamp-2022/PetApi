@@ -42,7 +42,7 @@ namespace PetApiTest
             var savedPet = JsonConvert.DeserializeObject<Pet>(responseBody);
 
             // Then
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            response.EnsureSuccessStatusCode();
             Assert.Equal(givenName, savedPet.Name);
             Assert.Equal(givenType, savedPet.Type);
             Assert.Equal(givenColor, savedPet.Color);

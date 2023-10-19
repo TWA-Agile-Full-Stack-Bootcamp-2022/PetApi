@@ -1,16 +1,20 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PetApi.Controllers
 {
-    [ApiController]
     [Route("api/pets")]
+    [ApiController]
     public class PetController : ControllerBase
     {
+        private List<Pet> pets = new List<Pet>();
+
         [HttpPost]
-        public async Task<ActionResult<Pet>> PostPet(Pet pet)
+        public Pet PostPet(Pet pet)
         {
-            return null;
+            pets.Add(pet);
+            return pet;
         }
     }
 }
