@@ -8,13 +8,19 @@ namespace PetApi.Controllers
     [ApiController]
     public class PetController : ControllerBase
     {
-        private List<Pet> pets = new List<Pet>();
+        public static List<Pet> Pets { get; set; } = new List<Pet>();
 
         [HttpPost]
         public Pet PostPet(Pet pet)
         {
-            pets.Add(pet);
+            Pets.Add(pet);
             return pet;
+        }
+
+        [HttpGet]
+        public List<Pet> GetAllPets()
+        {
+            return Pets;
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
 using Newtonsoft.Json;
 using PetApi;
-using System.Net;
+using PetApi.Controllers;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
@@ -39,6 +40,26 @@ namespace PetApiTest
             // Then
             response.EnsureSuccessStatusCode();
             Assert.Equal(givenPet, savedPet);
+        }
+
+        [Fact]
+        public async Task Should_return_all_pets_when_get_all_given_some_pets_already_existed()
+        {
+            // Given
+            Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
+            Pet givenPetCat = new Pet("Luna", PetType.Cat, "White", 200);
+            PetController.Pets.Add(givenPetDog);
+            PetController.Pets.Add(givenPetCat);
+
+            // When
+            var response = await client.GetAsync("api/pets");
+
+            // Then
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var pets = JsonConvert.DeserializeObject<List<Pet>>(responseBody);
+            Assert.Equal(givenPetDog, pets[0]);
+            Assert.Equal(givenPetCat, pets[1]);
         }
     }
 }
