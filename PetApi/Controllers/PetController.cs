@@ -20,8 +20,13 @@ namespace PetApi.Controllers
         }
 
         [HttpGet]
-        public List<Pet> GetAllPets()
+        public List<Pet> GetAllPets(PetType? type)
         {
+            if (type != null) 
+            {
+                return Pets.Where(pet => pet.Type.Equals(type)).ToList();
+            }
+
             return Pets;
         }
 

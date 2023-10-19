@@ -100,7 +100,7 @@ namespace PetApiTest
         public async Task Should_can_delete_pet_when_pet_was_sold_by_given_name()
         {
             HttpClient client = CreateContextAndGetHttpClient();
-
+            PetController.Pets.Clear();
             // Given
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
             PetController.Pets.Add(givenPetDog);
@@ -134,6 +134,28 @@ namespace PetApiTest
             Assert.Equal(updatePetDog.Price, petUpdated.Price);
             Assert.Equal(givenPetDog.Color, petUpdated.Color);
             Assert.Equal(givenPetDog.Type, petUpdated.Type);
+        }
+
+        [Fact]
+        public async Task Should_can_find_pets_by_type_when_find_by_type_given_one_type_of_pet()
+        {
+            HttpClient client = CreateContextAndGetHttpClient();
+
+            // Given
+            Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
+            Pet givenPetCat = new Pet("Luna", PetType.Cat, "White", 200);
+            PetController.Pets.Add(givenPetDog);
+            PetController.Pets.Add(givenPetCat);
+
+            // When
+            var response = await client.GetAsync($"api/pets?type={PetType.Dog}");
+
+            // Then
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var pets = JsonConvert.DeserializeObject<List<Pet>>(responseBody);
+            Assert.Single(pets);
+            Assert.Equal(givenPetDog, pets[0]);
         }
 
         private static StringContent SerializeContent(Pet givenPet)
