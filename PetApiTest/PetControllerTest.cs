@@ -64,7 +64,7 @@ namespace PetApiTest
         public async Task Should_return_the_pet_when_find_by_name_given_a_existed_pet_and_its_name()
         {
             HttpClient client = CreateContextAndGetHttpClient();
-
+            PetController.Pets.Clear();
             // Given
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
             PetController.Pets.Add(givenPetDog);
@@ -112,6 +112,28 @@ namespace PetApiTest
             // Then
             response.EnsureSuccessStatusCode();
             Assert.Empty(PetController.Pets);
+        }
+
+        [Fact]
+        public async Task Should_can_modify_the_price_when_update_give_the_name_and_price()
+        {
+            HttpClient client = CreateContextAndGetHttpClient();
+
+            // Given
+            Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
+            PetController.Pets.Add(givenPetDog);
+            Pet updatePetDog = new Pet("Buddy", PetType.Cat, "Black", 600);
+
+            // When
+            const string urlWithPetName = "api/pets/Buddy";
+            var response = await client.PutAsync(urlWithPetName, SerializeContent(updatePetDog));
+            // Then
+            response.EnsureSuccessStatusCode();
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var petUpdated = JsonConvert.DeserializeObject<Pet>(responseBody);
+            Assert.Equal(updatePetDog.Price, petUpdated.Price);
+            Assert.Equal(givenPetDog.Color, petUpdated.Color);
+            Assert.Equal(givenPetDog.Type, petUpdated.Type);
         }
 
         private static StringContent SerializeContent(Pet givenPet)
