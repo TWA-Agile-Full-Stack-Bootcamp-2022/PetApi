@@ -43,6 +43,12 @@ namespace PetApi.Controllers
             return petToUpdate;
         }
 
+        [HttpGet("type")]
+        public List<Pet> FindByType(string type)
+        {
+            return pets.FindAll(pet => pet.Type == type);
+        }
+
         [NonAction]
         public void Reset()
         {

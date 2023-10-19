@@ -102,5 +102,31 @@ namespace PetApiTest
 
             Assert.Equal(200, JsonConvert.DeserializeObject<Pet>(body).Price);
         }
+
+        [Fact]
+        public async void Should_find_pets_when_given_type()
+        {
+            var petController = new PetController();
+            petController.Reset();
+            TestServer server = new TestServer(new WebHostBuilder().UseStartup<Startup>());
+            HttpClient client = server.CreateClient();
+            var pet = new Pet(name: "Ali", type: "cat", color: "red", price: 100);
+            var pet2 = new Pet(name: "MiLu", type: "cat", color: "red", price: 100);
+            var pet3 = new Pet(name: "Duoduo", type: "dog", color: "white", price: 100);
+            var httpContent = new StringContent(JsonConvert.SerializeObject(pet), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var httpContent2 = new StringContent(JsonConvert.SerializeObject(pet2), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var httpContent3 = new StringContent(JsonConvert.SerializeObject(pet3), Encoding.UTF8, MediaTypeNames.Application.Json);
+            await client.PostAsync("/Pet", httpContent);
+            await client.PostAsync("/Pet", httpContent2);
+            await client.PostAsync("/Pet", httpContent3);
+
+            var response = await client.GetAsync("/Pet/type?type=cat");
+            var body = await response.Content.ReadAsStringAsync();
+            var pets = JsonConvert.DeserializeObject<List<Pet>>(body);
+
+            Assert.Equal(2, pets.Count);
+            Assert.Equal(pet, pets[0]);
+            Assert.Equal(pet2, pets[1]);
+        }
     }
 }
