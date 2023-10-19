@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Newtonsoft.Json;
 using PetApi;
+using PetApi.Controllers;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Mime;
@@ -45,8 +46,8 @@ namespace PetApiTest
             // Given
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
             Pet givenPetCat = new Pet("Luna", PetType.Cat, "White", 200);
-            await client.PostAsync("api/pets", SerializeContent(givenPetDog));
-            await client.PostAsync("api/pets", SerializeContent(givenPetCat));
+            PetController.Pets.Add(givenPetDog);
+            PetController.Pets.Add(givenPetCat);
 
             // When
             var response = await client.GetAsync("api/pets");
@@ -66,7 +67,7 @@ namespace PetApiTest
 
             // Given
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
-            await client.PostAsync("api/pets", SerializeContent(givenPetDog));
+            PetController.Pets.Add(givenPetDog);
 
             // When
             var response = await client.GetAsync("api/pets/Buddy");
@@ -102,18 +103,15 @@ namespace PetApiTest
 
             // Given
             Pet givenPetDog = new Pet("Buddy", PetType.Dog, "Gold", 300);
-            await client.PostAsync("api/pets", SerializeContent(givenPetDog));
+            PetController.Pets.Add(givenPetDog);
 
             // When
             const string urlWithPetName = "api/pets/Buddy";
-            await client.DeleteAsync(urlWithPetName);
-            var response = await client.GetAsync("api/pets/Buddy");
+            var response = await client.DeleteAsync(urlWithPetName);
 
             // Then
             response.EnsureSuccessStatusCode();
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var petFound = JsonConvert.DeserializeObject<Pet>(responseBody);
-            Assert.Null(petFound);
+            Assert.Empty(PetController.Pets);
         }
 
         private static StringContent SerializeContent(Pet givenPet)

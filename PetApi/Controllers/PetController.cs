@@ -9,37 +9,31 @@ namespace PetApi.Controllers
     [ApiController]
     public class PetController : ControllerBase
     {
-        private static List<Pet> pets = new List<Pet>();
+        public static List<Pet> Pets { get; set; } = new List<Pet>();
 
         [HttpPost]
         public Pet PostPet(Pet pet)
         {
-            pets.Add(pet);
+            Pets.Add(pet);
             return pet;
         }
 
         [HttpGet]
         public List<Pet> GetAllPets()
         {
-            return pets;
+            return Pets;
         }
 
         [HttpGet("{name}")]
         public Pet GetPetByName(string name)
         {
-            return pets.FirstOrDefault(pet => name.Equals(pet.Name));
+            return Pets.FirstOrDefault(pet => name.Equals(pet.Name));
         }
 
         [HttpDelete("{name}")]
         public void DeletePetByName(string name)
         {
-            pets.RemoveAll(pet => name.Equals(pet.Name));
-        }
-
-        [HttpGet("resetPets")]
-        public void ResetPets()
-        {
-            pets.Clear();
+            Pets.RemoveAll(pet => name.Equals(pet.Name));
         }
     }
 }
